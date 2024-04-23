@@ -17,6 +17,9 @@ import { useToast } from './ui/use-toast';
 import { useRouter } from 'next/router';
 import { OrderItem } from '@/utils/interfaces';
 import { useOrderStore } from '@/store/orderStore';
+
+import { SelectContent, SelectTrigger, SelectValue, Select, SelectItem } from './ui/select';
+
 interface MenusProps {
 
 }
@@ -100,7 +103,7 @@ export const Menus: React.FC<MenusProps> = ({ }) => {
     const loginStore = useLoginStore();
     const onSubmitIndividualDish = async (values: z.infer<typeof sendIndividualDishSchema>) => {
         // Handle dish submission
-        console.log(values);
+        console.log(values.cheesePreference);
         try {
             const postData = {
                 "name": values.name,
@@ -114,7 +117,7 @@ export const Menus: React.FC<MenusProps> = ({ }) => {
                 "quantity": 1,
                 "isCustomized": false,
                 "cheesePreference": values.cheesePreference,
-                "extraMeat": null,
+                "extraMeat": values.extraMeat,
                 "toppings": values.toppings,
                 "dishes": []
             } as any;
@@ -128,6 +131,7 @@ export const Menus: React.FC<MenusProps> = ({ }) => {
             const response = await axios.post(ADD_DISH, postData, config);
             if (response.status === 200 && response.data) {
                 toast({
+                    variant: "success",
                     title: "Individual Dish Added",
                     description: `Individual Dish ${values.name} added Successfully`,
                 })
@@ -137,6 +141,7 @@ export const Menus: React.FC<MenusProps> = ({ }) => {
             }
         } catch (E) {
             toast({
+                variant: "destructive",
                 title: "Dish Error",
                 description: `Dish was not added ${E}`,
             })
@@ -164,6 +169,7 @@ export const Menus: React.FC<MenusProps> = ({ }) => {
             if (response.status === 200 && response.data) {
 
                 toast({
+                    variant: "success",
                     title: "Combo Dish Added",
                     description: `Dish ${form2.getValues().name} added Successfully`,
                 })
@@ -174,12 +180,41 @@ export const Menus: React.FC<MenusProps> = ({ }) => {
             }
         } catch (E) {
             toast({
+                variant: "destructive",
                 title: "Combo Dish Error",
                 description: `Dish was not added ${E}`,
             })
         }
     };
-
+    const ExtraMeat = (
+        <FormField
+            control={form.control}
+            name="extraMeat"
+            render={({ field }) => (
+                <FormItem className="flex-col items-center justify-center pb-4 ">
+                    <div className="flex flex-col">
+                        <FormLabel className=" w-60 text-lg font-extrabold text-foreground">
+                            Extra Meat
+                        </FormLabel>
+                    </div>
+                    <FormControl>
+                        <Select onValueChange={field.onChange} defaultValue={"No Meat"}>
+                            <SelectTrigger className="w-[180px]">
+                                <SelectValue placeholder="Select extra meat" />
+                            </SelectTrigger>
+                            <SelectContent {...field}>
+                                <SelectItem value="chicken" >Chicken</SelectItem>
+                                <SelectItem value="beef" >Beef</SelectItem>
+                                <SelectItem value="pork" >Pork</SelectItem>
+                                <SelectItem value="lamb" >Lamb</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </FormControl>
+                    <FormMessage />
+                </FormItem>
+            )}
+        />
+    )
     const DishName = (
         <FormField
             control={form.control}
@@ -360,6 +395,30 @@ export const Menus: React.FC<MenusProps> = ({ }) => {
             )}
         />
     );
+    const CheesePreference = (
+        <FormField
+            control={form.control}
+            name="cheesePreference"
+            render={({ field: { value, onChange, ...field } }) => (
+                <FormItem className="flex-col items-center justify-center pb-4">
+                    <div className="flex flex-col">
+                        <FormLabel className=" w-44 text-lg font-extrabold text-foreground">
+                            Cheese Preference
+                        </FormLabel>
+                    </div>
+                    <FormControl>
+                        <Input
+                            type="checkbox"
+                            checked={value === 1} // Ensure the checkbox is checked based on the value being 1
+                            onChange={e => onChange(e.target.checked ? 1 : 0)}
+                            {...field}
+                        />
+                    </FormControl>
+                    <FormMessage />
+                </FormItem>
+            )}
+        />
+    );
     const PreparationTime = (
         <FormField
             control={form.control}
@@ -424,7 +483,6 @@ export const Menus: React.FC<MenusProps> = ({ }) => {
     );
 
 
-
     return (
         <div className="flex flex-col p-6 container mx-auto">
             <div className="flex p-2">
@@ -447,12 +505,16 @@ export const Menus: React.FC<MenusProps> = ({ }) => {
                                     {DishName}
                                     {DishDescription}
                                     <div className="flex justify-between">
+                                        {CheesePreference}
+                                        {ExtraMeat}
+                                    </div>
+
+                                    <div className="flex justify-between">
                                         {IsGlutenFree}
                                         {IsVegan}
                                         {Price}
                                     </div>
                                     <div className="flex justify-between">
-
                                         {PreparationTime}
                                         {Calories}
                                     </div>
@@ -515,4 +577,8 @@ export const Menus: React.FC<MenusProps> = ({ }) => {
             </div>
         </div>
     );
+
+
 }
+
+

@@ -76,6 +76,7 @@ const Cart: React.FC<CartProps> = ({ }) => {
 
             if (response.status === 200 && response.data) {
                 toast({
+                    variant: "success",
                     title: "Your Order Was Placed",
                     description: ``,
                 })
